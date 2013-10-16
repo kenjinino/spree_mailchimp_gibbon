@@ -1,5 +1,5 @@
 source 'http://rubygems.org'
 gemspec
 
-gem 'hominid', :git => 'git://github.com/tatemae-consultancy/hominid.git'
+gem 'gibbon', :git => 'git://github.com/amro/gibbon.git'
 

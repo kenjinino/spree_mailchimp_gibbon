@@ -12,10 +12,10 @@ class Spree::SubscriptionsController < Spree::BaseController
         @errors << t('that_address_is_already_subscribed')
       else
         begin
-          hominid.list_subscribe( Spree::Config[:mailchimp_list_id], params[:email], {}, 'html',
+          gibbon.lists.subscribe( Spree::Config[:mailchimp_list_id], params[:email], {}, 'html',
                                   false, false, false, true )
 
-        rescue Hominid::APIError => ex
+        rescue Gibbon::MailChimpError => ex
           @errors << t('that_address_is_already_subscribed')
           logger.warn "SpreeMailChimp: Failed to subscribe user: #{ex.message}\n#{ex.backtrace.join("\n")}"
         end
@@ -38,8 +38,8 @@ class Spree::SubscriptionsController < Spree::BaseController
 
   private
 
-  def hominid
-    @hominid ||= Hominid::API.new(Spree::Config[:mailchimp_api_key], {api_version: '1.3'})
+  def gibbon
+    @gibbon ||= Gibbon.new(Spree::Config[:mailchimp_api_key])
   end
 
 end

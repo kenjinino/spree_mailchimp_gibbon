@@ -5,8 +5,8 @@ Spree::User.class_eval do
 
   private
 
-  def hominid
-    @hominid ||= Hominid::API.new(Spree::Config[:mailchimp_api_key])
+  def gibbon
+    @gibbon ||= Gibbon.new(Spree::Config[:mailchimp_api_key])
   end
 
   # Subscribes a user to the mailing list
@@ -15,7 +15,7 @@ Spree::User.class_eval do
   def mailchimp_add_to_mailing_list
     if self.is_mail_list_subscriber?
       begin
-        hominid.list_subscribe( mailchimp_list_id, self.email, mailchimp_merge_vars, 'html', mailchimp_subscription_opts)
+        gibbon.lists.subscribe( mailchimp_list_id, self.email, mailchimp_merge_vars, 'html', mailchimp_subscription_opts)
         logger.debug "Fetching new mailchimp subscriber info"
 
         assign_mailchimp_subscriber_id if self.mailchimp_subscriber_id.blank?
@@ -32,7 +32,7 @@ Spree::User.class_eval do
     if !self.is_mail_list_subscriber? && self.mailchimp_subscriber_id.present?
       begin
         # TODO: Get rid of those magic values. Maybe add them as Spree::Config options?
-        hominid.list_unsubscribe( mailchimp_list_id, self.email, false, false, true )
+        gibbon.lists.unsubscribe( mailchimp_list_id, self.email, false, false, true )
         logger.debug "Removing mailchimp subscriber"
       rescue Exception => ex
         logger.warn "SpreeMailChimp: Failed to remove contact from Mailchimp: #{ex.message}\n#{ex.backtrace.join("\n")}"
@@ -58,7 +58,7 @@ Spree::User.class_eval do
   # Returns the Mailchimp ID
   def assign_mailchimp_subscriber_id
     begin
-      response = hominid.list_member_info( mailchimp_list_id, [self.email])
+      response = gibbon.lists.member-info( mailchimp_list_id, [self.email])
 
       if response[:success] == 1
         member = response[:data][0]
