@@ -25,14 +25,21 @@ class Spree::SubscriptionsController < Spree::BaseController
     end
 
     respond_to do |format|
-      format.js { render :layout => false }
+      format.js do
+        if @errors.empty?
+          flash[:success] = Spree.t(:you_have_been_subscribed)
+        else
+          flash[:error] = Spree.t(:error) + ":" + @errors.join(' / ')
+        end
+        render 'spree/subscriptions/create'
+      end
     end
   end
 
   private
 
   def hominid
-    @hominid ||= Hominid::API.new(Spree::Config[:mailchimp_api_key])
+    @hominid ||= Hominid::API.new(Spree::Config[:mailchimp_api_key], {api_version: '1.3'})
   end
 
 end
