@@ -6,7 +6,7 @@ Spree::User.class_eval do
   private
 
   def gibbon
-    @gibbon ||= Gibbon.new(Spree::Config[:mailchimp_api_key])
+    @gibbon ||= Gibbon::API.new(Spree::Config[:mailchimp_api_key])
   end
 
   # Subscribes a user to the mailing list
