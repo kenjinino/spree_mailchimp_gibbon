@@ -39,7 +39,7 @@ class Spree::SubscriptionsController < Spree::BaseController
         if @errors.empty?
           flash[:success] = Spree.t(:you_have_been_subscribed)
         else
-          flash[:error] = Spree.t(:error) + ":" + @errors.join(' / ')
+          flash[:error] = @errors.join('. ')
         end
         render 'spree/subscriptions/create'
       end
