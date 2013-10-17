@@ -16,7 +16,7 @@ Spree::User.class_eval do
     if self.is_mail_list_subscriber?
       begin
         gibbon.lists.subscribe( { id: mailchimp_list_id, email: { email: self.email }, merge_vars: mailchimp_merge_vars,
-                                  double_optin: false } )
+                                  double_optin: false, send_welcome: true } )
         logger.debug "Fetching new mailchimp subscriber info"
 
         assign_mailchimp_subscriber_id if self.mailchimp_subscriber_id.blank?
@@ -59,7 +59,7 @@ Spree::User.class_eval do
   # Returns the Mailchimp ID
   def assign_mailchimp_subscriber_id
     begin
-      response = gibbon.lists.member_info( { id: Spree::Config[:mailchimp_list_id], emails: [{ email: params[:email] }] })
+      response = gibbon.lists.member_info( { id: Spree::Config[:mailchimp_list_id], emails: [{ email: self.email }] })
 
       if response[:success] == 1
         member = response[:data][0]

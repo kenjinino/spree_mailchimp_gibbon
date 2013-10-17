@@ -9,19 +9,28 @@ class Spree::SubscriptionsController < Spree::BaseController
       @errors << t('invalid_email_address')
     else
       @mc_member = gibbon.lists.member_info( { id: Spree::Config[:mailchimp_list_id], emails: [{ email: params[:email] }] })
-      unless @mc_member["data"].first["status"] == "unsubscribed"
-        @errors << t('that_address_is_already_subscribed')
-      else
-        begin
-          gibbon.lists.subscribe( { id: Spree::Config[:mailchimp_list_id], email: { email: params[:email] }, merge_vars: {},
-                                    double_optin: false } )
+      if @mc_member
+        if @mc_member["data"].present?
+          if @mc_member["data"].first["status"] == "unsubscribed"
+            begin
+              gibbon.lists.subscribe( { id: Spree::Config[:mailchimp_list_id], email: { email: params[:email] }, merge_vars: {},
+                                        double_optin: false, send_welcome: true } )
+            rescue Exception => ex
+              @errors << t('that_address_is_already_subscribed')
+              logger.debug "SpreeMailChimp: Failed to subscribe user: #{ex.message}\n#{ex.backtrace.join("\n")}"
+            end
+          else
+            @errors << t('that_address_is_already_subscribed')
+          end
 
-        rescue Gibbon::MailChimpError => ex
-          @errors << t('that_address_is_already_subscribed')
-          logger.warn "SpreeMailChimp: Failed to subscribe user: #{ex.message}\n#{ex.backtrace.join("\n")}"
         end
-
-
+      elsif @mc_member["errors"].present?
+        if @mc_member["errors"].first["code"] != 232
+          @errors << t('that_address_is_already_subscribed')
+        else
+          gibbon.lists.subscribe( { id: Spree::Config[:mailchimp_list_id], email: { email: params[:email] }, merge_vars: {},
+                                    double_optin: false, send_welcome: true } )
+        end
       end
     end
 
